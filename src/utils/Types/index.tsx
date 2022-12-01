@@ -15,14 +15,42 @@ export type Input = {
   props: TextInputProps;
 };
 
+export type OptionSlider = {
+  title: string;
+  inicialValues: Array<number>;
+  label: string;
+  multiSliderValuesChange: (value: Array<number>) => void;
+};
+
+type SelectItem = {
+  label: string;
+  value: string;
+};
+
+export type Select = {
+  title: string;
+  inicialValue: string;
+  items: Array<SelectItem>;
+  setSelectedValue: (values: string) => {};
+};
+
 export type Button = {
   title: string;
   onPress: () => void;
 };
 
+export type AgeRangeType = {
+  min: number;
+  max: number;
+};
+
 export type User = {
-  user_id: string;
+  userId: string;
   name: string;
+  profileImage: string;
+  ageRange: AgeRangeType;
+  maxDistance: number;
+  selectedGender: string;
 };
 
 export type UserState = {
@@ -55,4 +83,8 @@ export type RequestParam = {
 export type NetworkResponse<T> = {
   kind: ResponseKind;
   body?: T;
+};
+
+export type ThumbSlider = {
+  name: string;
 };

@@ -1,16 +1,6 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
 import React, {type PropsWithChildren, useEffect} from 'react';
 import {ScrollView, StyleSheet, Text, useColorScheme, View} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, StackActions} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {
   Colors,
@@ -79,14 +69,16 @@ const HomeScreen = () => {
   };
 
   const subscribeLocationLocation = () => {
-    let watchID = Geolocation.watchPosition(
+    Geolocation.watchPosition(
       async position => {
         const long = JSON.stringify(position.coords.longitude);
         const lat = JSON.stringify(position.coords.latitude);
         await dispatcher(getUsers({lat, long}));
         console.log(userState.users);
       },
-      error => {},
+      error => {
+        console.log(error);
+      },
       {
         enableHighAccuracy: false,
         maximumAge: 1000,
@@ -97,7 +89,7 @@ const HomeScreen = () => {
   useEffect(() => {
     console.log(userState.token);
     if (userState.token === '') {
-      navigation.navigate('LoginScreen');
+      navigation.dispatch(StackActions.replace('LoginScreen'));
     }
     // if (userState.token === '') {
     //   navigation.navigate('LoginScreen');

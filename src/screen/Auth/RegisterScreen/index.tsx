@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
-import {ScrollView, Keyboard, View, Text} from 'react-native';
+import {ScrollView, Keyboard, View} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, StackActions} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import Geolocation from '@react-native-community/geolocation';
 
 import {RootState} from '../../../wrappers/Reducers';
 import {registerUser} from '../../../wrappers/Reducers/Slices/UserSlice';
@@ -18,7 +19,12 @@ const RegisterScreen = () => {
   const dispatcher = useDispatch();
   const screenState = useSelector((state: RootState) => state);
 
-  const [inputs, setInputs] = useState({name: '', email: '', password: ''});
+  const [inputs, setInputs] = useState({
+    name: '',
+    email: '',
+    password: '',
+    coordinates: {lat: 0, long: 0},
+  });
   const [errors, setErrors] = useState({name: '', email: '', password: ''});
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStack>>();
@@ -29,6 +35,26 @@ const RegisterScreen = () => {
 
   const handleError = (error: string, input: string) => {
     setErrors(prevState => ({...prevState, [input]: error}));
+  };
+
+  const getCoordinates = () => {
+    Geolocation.watchPosition(
+      async position => {
+        const long = position.coords.longitude;
+        const lat = position.coords.latitude;
+        setInputs(prevState => ({
+          ...prevState,
+          ['coordinates']: {lat: lat, long: long},
+        }));
+      },
+      error => {
+        console.log(error);
+      },
+      {
+        enableHighAccuracy: false,
+        maximumAge: 1000,
+      },
+    );
   };
 
   const validate = () => {
@@ -56,11 +82,11 @@ const RegisterScreen = () => {
   const register = async () => {
     try {
       if (validate()) {
+        getCoordinates();
         await dispatcher(registerUser(inputs));
         if (!screenState.user.error) {
-          //navigation.navigate('HomeScreen');
+          navigation.dispatch(StackActions.replace('HomeScreen'));
         }
-        console.log(screenState.user);
       }
     } catch (error) {
       console.log(error);

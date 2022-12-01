@@ -17,20 +17,13 @@ import {
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import {NavigationContainer} from '@react-navigation/native';
-import MainNavigation from './src/navigation/MainNavigation';
+import BottonNavigation from './src/navigation/BottonNavigation';
 import {Provider as ReduxProvider} from 'react-redux';
 import store from './src/wrappers/Reducers';
 
 const App = () => {
-  try {
-    Icon.loadFont();
-  } catch (error) {
-    console.log(error);
-  }
-
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -45,7 +38,7 @@ const App = () => {
       />
       <ReduxProvider store={store}>
         <NavigationContainer>
-          <MainNavigation />
+          <BottonNavigation />
         </NavigationContainer>
       </ReduxProvider>
     </SafeAreaView>

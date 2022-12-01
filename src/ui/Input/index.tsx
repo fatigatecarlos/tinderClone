@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, TextInput} from 'react-native';
 import COLORS from '../../utils/Colors';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 import style from './styles';
 import {Input as InputType} from '../../utils/Types';
 
@@ -31,7 +31,6 @@ const Input = ({
               : COLORS.light,
           },
         ]}>
-        <Icon name={iconName} style={style.icon} />
         <TextInput
           autoCorrect={false}
           autoCapitalize={autoCapitalize ?? 'sentences'}
@@ -44,13 +43,6 @@ const Input = ({
           style={style.input}
           {...props}
         />
-        {password && (
-          <Icon
-            onPress={() => setHidePassword(!hidePassword)}
-            name={hidePassword ? 'eye-outline' : 'eye-off-outline'}
-            style={style.icon}
-          />
-        )}
       </View>
       {error && <Text style={style.error}>{error}</Text>}
     </View>

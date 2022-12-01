@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {ScrollView, Keyboard, View, Text, TouchableOpacity} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, StackActions} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import Input from '../../../ui/Input';
@@ -42,9 +42,9 @@ const LoginScreen = () => {
   const login = async () => {
     try {
       if (validate()) {
-        dispatcher(loginUser(inputs));
+        await dispatcher(loginUser(inputs));
         if (!screenState.user.error) {
-          navigation.navigate('HomeScreen');
+          navigation.dispatch(StackActions.replace('HomeScreen'));
         }
         console.log(screenState.user);
       }

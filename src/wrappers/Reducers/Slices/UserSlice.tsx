@@ -6,6 +6,14 @@ const initialState: UserState = {
   user: {
     user_id: '',
     name: '',
+    profileImage: '',
+    ageRange: {
+      min: 18,
+      max: 90,
+    },
+    maxDistance: 5,
+    selectedGender: 'both',
+    coordinates: {lat: 0, long: 0},
   },
   users: [],
   token: '',
@@ -18,7 +26,7 @@ export const registerUser = createAsyncThunk<{
   token: string;
   param: RequestParam;
 }>('registerUser', async param => {
-  const response = await authRequest('auth/register', param);
+  const response = await authRequest('POST', 'auth/register', param);
   console.log(response);
   if (response.kind === 'success') {
     console.log(response.body);
@@ -32,7 +40,7 @@ export const loginUser = createAsyncThunk<
   {token: string},
   {param: RequestParam}
 >('loginUser', async param => {
-  const response = await authRequest('auth/login', param);
+  const response = await authRequest('POST', 'auth/login', param);
 
   if (response.kind === 'success') {
     return {token: response.body.token ?? ''};
@@ -45,14 +53,31 @@ export const getUsers = createAsyncThunk<
   {users: Array<User>},
   {param: Position}
 >('getUsers', async param => {
-  const response = await authRequest('users', param);
+  const response = await authRequest('POST', 'users', param);
 
   if (response.kind === 'success') {
-    return {users: response.body.users ?? ''};
+    return {users: response.body ?? ''};
   }
 
   throw new Error('Sorry! We can create you account now, try again later.');
 });
+
+export const saveConfigurations = createAsyncThunk<{user: User}, {param: User}>(
+  'saveConfigurations',
+  async (param: User) => {
+    const response = await authRequest(
+      'PUT',
+      'user/' + param.userId + '/configuration',
+      param,
+    );
+
+    if (response.kind === 'success') {
+      return {user: response.body ?? ''};
+    }
+
+    throw new Error('Sorry! We can create you account now, try again later.');
+  },
+);
 
 const userSlice = createSlice({
   name: 'user',
@@ -96,6 +121,20 @@ const userSlice = createSlice({
         state.loading = false;
       })
       .addCase(getUsers.rejected, state => {
+        state.loading = false;
+        state.error = true;
+      });
+    builder
+      .addCase(saveConfigurations.pending, state => {
+        state.loading = true;
+        state.error = false;
+      })
+      .addCase(saveConfigurations.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+        state.error = false;
+      })
+      .addCase(saveConfigurations.rejected, state => {
         state.loading = false;
         state.error = true;
       });
