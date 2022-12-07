@@ -22,6 +22,9 @@ import {NavigationContainer} from '@react-navigation/native';
 import BottonNavigation from './src/navigation/BottonNavigation';
 import {Provider as ReduxProvider} from 'react-redux';
 import store from './src/wrappers/Reducers';
+if (__DEV__) {
+  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));
+}
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View} from 'react-native';
+import {View, Text, TouchableOpacity} from 'react-native';
 
 import Geolocation from '@react-native-community/geolocation';
 import {useSelector, useDispatch} from 'react-redux';
@@ -12,9 +12,13 @@ import Loader from '../../../ui/Loader';
 import Button from '../../../ui/Button';
 import {RootStack} from '../../../utils/Types';
 import {setPosition} from '../../../wrappers/Reducers/Slices/GeolocationSlice';
-import {saveConfigurations} from '../../../wrappers/Reducers/Slices/UserSlice';
+import {
+  saveConfigurations,
+  getProfile,
+} from '../../../wrappers/Reducers/Slices/UserSlice';
 import OptionSlider from '../../../components/OptionSlider';
 import Select from '../../../components/Select';
+import Input from '../../../ui/Input';
 
 const ConfigurationScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStack>>();
@@ -27,17 +31,24 @@ const ConfigurationScreen = () => {
     {label: 'Both', value: 'both'},
   ];
 
+  const [description, setDescription] = useState(
+    reduxStates.user.user.description,
+  );
+
   const [coordinates, setCoordinates] = useState({
     lat: reduxStates.geolocation.position.lat,
     long: reduxStates.geolocation.position.long,
   });
+
   const [ageRange, setAgeRange] = useState({
     min: reduxStates.user.user.ageRange.min,
     max: reduxStates.user.user.ageRange.max,
   });
+
   const [maxDistance, setMaxDistance] = useState(
     reduxStates.user.user.maxDistance,
   );
+
   const [selectedGender, setSelectedGender] = useState(
     reduxStates.user.user.selectedGender,
   );
@@ -59,6 +70,25 @@ const ConfigurationScreen = () => {
   };
 
   const saveConfig = async () => {
+    try {
+      let userConfig = {
+        userId: reduxStates.user.user.userId,
+        coordinates: coordinates,
+        description: description,
+        ageRange: ageRange,
+        maxDistance: maxDistance,
+        selectedGender: selectedGender,
+      };
+      dispatcher(saveConfigurations(userConfig));
+      if (!reduxStates.user.error) {
+        navigation.navigate('HomeScreen');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getCoordinates = async () => {
     await Geolocation.watchPosition(
       async position => {
         setCoordinates({
@@ -74,34 +104,38 @@ const ConfigurationScreen = () => {
         maximumAge: 1000,
       },
     );
-
-    try {
-      let userConfig = {
-        userId: reduxStates.user.user.userId,
-        coordinates: coordinates,
-        ageRange: ageRange,
-        maxDistance: maxDistance,
-        selectedGender: selectedGender,
-      };
-      await dispatcher(saveConfigurations(userConfig));
-      if (!reduxStates.user.error) {
-        await dispatcher(setPosition(coordinates));
-        navigation.navigate('HomeScreen');
-      }
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   useEffect(() => {
     if (reduxStates.user.token === '') {
       navigation.dispatch(StackActions.replace('LoginScreen'));
     }
-  });
+
+    try {
+      getCoordinates();
+      dispatcher(getProfile(reduxStates.user.token));
+      console.log('reduxStates.user.user');
+      console.log(reduxStates.user.user);
+    } catch (error) {
+      navigation.dispatch(StackActions.replace('LoginScreen'));
+    }
+  }, [dispatcher, navigation, reduxStates.user.token]);
 
   return (
     <View style={style.container}>
       <Loader visible={reduxStates.user.loading} />
+      <View>
+        <Text>{reduxStates.user.user.name}</Text>
+      </View>
+      <Input
+        onChangeText={(text: string) => setDescription(text)}
+        multiline
+        numberOfLines={6}
+        maxLength={200}
+        value={description}
+        label="Description"
+        placeholder="Enter your description"
+      />
       <OptionSlider
         title={'Age range'}
         inicialValues={[ageRange.min, ageRange.max]}
@@ -121,6 +155,12 @@ const ConfigurationScreen = () => {
         items={selectItems}
         setSelectedValue={handleSeletedGenderChange}
       />
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('ProfileImagesScreen');
+        }}>
+        <Text>Profile images</Text>
+      </TouchableOpacity>
       <Button title="Save" onPress={saveConfig} />
     </View>
   );

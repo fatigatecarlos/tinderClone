@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {ScrollView, Keyboard, View, Text, TouchableOpacity} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation, StackActions} from '@react-navigation/native';
@@ -43,7 +43,7 @@ const LoginScreen = () => {
     try {
       if (validate()) {
         await dispatcher(loginUser(inputs));
-        if (!screenState.user.error) {
+        if (screenState.user.token) {
           navigation.dispatch(StackActions.replace('HomeScreen'));
         }
         console.log(screenState.user);
@@ -60,6 +60,12 @@ const LoginScreen = () => {
   const handleError = (error: string, input: string) => {
     setErrors(prevState => ({...prevState, [input]: error}));
   };
+
+  useEffect(() => {
+    if (screenState.user.token) {
+      navigation.dispatch(StackActions.replace('HomeScreen'));
+    }
+  }, [screenState.user.token, navigation]);
 
   return (
     <ScrollView>

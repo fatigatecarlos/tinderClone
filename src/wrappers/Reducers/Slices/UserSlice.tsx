@@ -1,10 +1,10 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {authRequest} from '../../../api/authService';
+import {authRequest, axiosRequest} from '../../../api/authService';
 import {UserState, User, Position, RequestParam} from '../../../utils/Types';
 
 const initialState: UserState = {
   user: {
-    user_id: '',
+    userId: '',
     name: '',
     profileImage: '',
     ageRange: {
@@ -13,7 +13,6 @@ const initialState: UserState = {
     },
     maxDistance: 5,
     selectedGender: 'both',
-    coordinates: {lat: 0, long: 0},
   },
   users: [],
   token: '',
@@ -41,7 +40,7 @@ export const loginUser = createAsyncThunk<
   {param: RequestParam}
 >('loginUser', async param => {
   const response = await authRequest('POST', 'auth/login', param);
-
+  console.log();
   if (response.kind === 'success') {
     return {token: response.body.token ?? ''};
   }
@@ -65,14 +64,25 @@ export const getUsers = createAsyncThunk<
 export const saveConfigurations = createAsyncThunk<{user: User}, {param: User}>(
   'saveConfigurations',
   async (param: User) => {
-    const response = await authRequest(
-      'PUT',
-      'user/' + param.userId + '/configuration',
-      param,
-    );
+    const response = await authRequest('PUT', 'me/' + param.userId, param);
 
     if (response.kind === 'success') {
       return {user: response.body ?? ''};
+    }
+
+    throw new Error('Sorry! We can create you account now, try again later.');
+  },
+);
+
+export const getProfile = createAsyncThunk<{user: UserState}, {token: string}>(
+  'getProfile',
+  async (token: string) => {
+    console.log('getProfile');
+    const response = await axiosRequest('GET', 'me', null, token);
+    console.log('getProfile');
+    console.log(response);
+    if (response.kind === 'success') {
+      return {users: response.body ?? ''};
     }
 
     throw new Error('Sorry! We can create you account now, try again later.');
@@ -135,6 +145,20 @@ const userSlice = createSlice({
         state.error = false;
       })
       .addCase(saveConfigurations.rejected, state => {
+        state.loading = false;
+        state.error = true;
+      });
+    builder
+      .addCase(getProfile.pending, state => {
+        state.loading = true;
+        state.error = false;
+      })
+      .addCase(getProfile.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+        state.error = false;
+      })
+      .addCase(getProfile.rejected, state => {
         state.loading = false;
         state.error = true;
       });

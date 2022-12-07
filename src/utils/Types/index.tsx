@@ -3,6 +3,9 @@ import {TextInputProps} from 'react-native';
 export type RootStack = {
   HomeScreen: undefined;
   RegisterScreen: undefined;
+  LoginScreen: undefined;
+  ConfigurationScreen: undefined;
+  ProfileImagesScreen: undefined;
 };
 
 export type Input = {
@@ -47,6 +50,7 @@ export type AgeRangeType = {
 export type User = {
   userId: string;
   name: string;
+  description: string;
   profileImage: string;
   ageRange: AgeRangeType;
   maxDistance: number;

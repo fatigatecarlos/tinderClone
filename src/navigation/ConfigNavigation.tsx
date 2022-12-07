@@ -29,9 +29,6 @@ const ConfigNavigation = () => {
       <Stack.Screen
         name="ProfileImagesScreen"
         component={ProfileImagesScreen}
-        options={{
-          headerShown: false,
-        }}
       />
       {authNavigation}
     </Stack.Navigator>
